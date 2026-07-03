@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 100">
+  <!-- 0 fingers -->
+  <text x="50" y="60" font-size="40" text-anchor="middle">✊</text>
+  <!-- 1 finger -->
+  <text x="150" y="60" font-size="40" text-anchor="middle">☝️</text>
+  <!-- 2 fingers -->
+  <text x="250" y="60" font-size="40" text-anchor="middle">✌️</text>
+  <!-- 3 fingers -->
+  <text x="350" y="60" font-size="40" text-anchor="middle">🤟</text>
+  <!-- 4 fingers -->
+  <text x="450" y="60" font-size="40" text-anchor="middle">🖐️</text>
+</svg>
