@@ -11,61 +11,47 @@ class JarimatikaApp {
         this.chatbot = null;
         this.isRunning = false;
         this.isDarkTheme = false;
-        
         this.init();
     }
 
     async init() {
         try {
-            // Initialize components
             this.camera = new CameraManager();
             this.detector = new HandDetector();
             this.calculator = new JarimatikaCalculator();
             this.chatbot = new JarimatikaChatbot();
 
-            // Initialize camera
             await this.camera.init();
-            
-            // Load hand detector model
-            this.updateStatus('loading', '⏳ Memuat model...');
             await this.detector.loadModel();
             this.updateStatus('ready', '✅ Model siap');
 
-            // Setup event listeners
             this.setupEvents();
-
-            // Setup theme
             this.setupTheme();
-
-            // Setup info modal
             this.setupInfoModal();
 
-            // Start prediction loop when camera is ready
             this.camera.onReady(() => {
                 this.startPredictionLoop();
             });
 
-            console.log('✅ Jarimatika App initialized successfully');
+            console.log('✅ Jarimatika App initialized');
         } catch (error) {
-            console.error('❌ Failed to initialize:', error);
+            console.error('❌ Init error:', error);
             this.updateStatus('error', '❌ Gagal memuat aplikasi');
         }
     }
 
     setupEvents() {
-        // Start camera button
         document.getElementById('startCameraBtn').addEventListener('click', () => {
             this.camera.start();
         });
 
-        // Stop camera button
         document.getElementById('stopCameraBtn').addEventListener('click', () => {
             this.camera.stop();
             this.isRunning = false;
             document.getElementById('cameraOverlay').classList.remove('hidden');
         });
 
-        // Calculator buttons
+        // Kalkulator
         document.querySelectorAll('.calc-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const value = btn.dataset.value;
@@ -78,12 +64,10 @@ class JarimatikaApp {
         document.getElementById('chatSendBtn').addEventListener('click', () => {
             this.handleChatInput();
         });
-
         document.getElementById('chatInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.handleChatInput();
         });
 
-        // Suggestion chips
         document.querySelectorAll('.suggestion-chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 const query = chip.dataset.query;
@@ -96,13 +80,11 @@ class JarimatikaApp {
     setupTheme() {
         const toggleBtn = document.getElementById('toggleTheme');
         const savedTheme = localStorage.getItem('jarimatika-theme');
-        
         if (savedTheme === 'dark') {
             this.isDarkTheme = true;
             document.documentElement.setAttribute('data-theme', 'dark');
             toggleBtn.textContent = '☀️';
         }
-
         toggleBtn.addEventListener('click', () => {
             this.isDarkTheme = !this.isDarkTheme;
             document.documentElement.setAttribute('data-theme', this.isDarkTheme ? 'dark' : 'light');
@@ -139,8 +121,6 @@ class JarimatikaApp {
     updateFingerDisplay(fingerCount, number) {
         document.getElementById('fingerCount').textContent = fingerCount;
         document.getElementById('fingerNumber').textContent = number;
-
-        // Update visual dots
         const dots = document.querySelectorAll('.finger-dot');
         dots.forEach((dot, index) => {
             dot.classList.toggle('active', index < fingerCount);
@@ -151,15 +131,9 @@ class JarimatikaApp {
         const input = document.getElementById('chatInput');
         const message = input.value.trim();
         if (!message) return;
-
-        // Add user message
         this.addChatMessage('user', message);
         input.value = '';
-
-        // Get bot response
         const response = this.chatbot.getResponse(message);
-        
-        // Add bot message with typing effect
         this.addChatMessage('bot', response);
     }
 
@@ -167,13 +141,10 @@ class JarimatikaApp {
         const container = document.getElementById('chatMessages');
         const div = document.createElement('div');
         div.className = `chat-message ${type}`;
-        
-        // Simple typing effect for bot
         if (type === 'bot') {
             div.textContent = '⏳';
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
-            
             let index = 0;
             const interval = setInterval(() => {
                 if (index <= text.length) {
@@ -201,54 +172,33 @@ class JarimatikaApp {
         const video = document.getElementById('video');
 
         const detect = async () => {
-            if (!this.isRunning || !this.camera.isActive()) {
-                return;
-            }
+            if (!this.isRunning || !this.camera.isActive()) return;
 
             try {
-                // Draw video frame to canvas
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                // Detect hand landmarks
                 const landmarks = await this.detector.detect(canvas);
-
                 if (landmarks) {
-                    // Draw landmarks
-                    this.detector.drawLandmarks(ctx, landmarks);
-
-                    // Count fingers
+                    this.detector.drawLandmarks(ctx, landmarks, canvas.width, canvas.height);
                     const fingerCount = this.detector.countFingers(landmarks);
                     const number = this.detector.getNumberFromFingers(fingerCount);
-
-                    // Update display
                     this.updateFingerDisplay(fingerCount, number);
-
-                    // Update calculator with detected number
                     this.calculator.setDetectedNumber(number);
                     this.updateCalculatorDisplay();
                 }
-
             } catch (error) {
                 console.error('Prediction error:', error);
             }
-
-            // Continue loop
             requestAnimationFrame(detect);
         };
 
-        // Set canvas dimensions
         canvas.width = video.videoWidth || 640;
         canvas.height = video.videoHeight || 480;
-
         detect();
     }
 }
 
-// Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     const app = new JarimatikaApp();
-
-    // Cleanup on page unload
     window.addEventListener('beforeunload', () => {
         if (app.camera) app.camera.destroy();
         if (app.detector) app.detector.dispose();
