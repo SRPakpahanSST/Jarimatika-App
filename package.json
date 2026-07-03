@@ -1,0 +1,30 @@
+{
+  "name": "jarimatika-app",
+  "version": "1.0.0",
+  "description": "Jarimatika App - Learn counting with fingers using AI",
+  "main": "js/app.js",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "live-server --port=8000",
+    "build": "echo 'Build completed'",
+    "test": "echo 'No tests specified'",
+    "lint": "eslint js/*.js"
+  },
+  "keywords": [
+    "jarimatika",
+    "computer-vision",
+    "mediapipe",
+    "tensorflow",
+    "education"
+  ],
+  "author": "Ubelasy + NKHM Nusantara",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {
+    "@mediapipe/hands": "^0.4.1675469240",
+    "@tensorflow/tfjs": "^4.20.0"
+  }
+}
