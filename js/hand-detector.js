@@ -4,82 +4,49 @@ import { Camera } from '@mediapipe/camera_utils';
 class HandDetector {
     constructor() {
         this.isLoaded = false;
-        this.landmarks = null;
-        this.hands = null;
-        this.camera = null;
-        this.onResults = null;
     }
 
     async loadModel() {
-        try {
-            this.hands = new Hands({
-                locateFile: (file) => {
-                    return `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`;
-                }
-            });
-
-            this.hands.setOptions({
-                maxNumHands: 2,
-                modelComplexity: 1,
-                minDetectionConfidence: 0.7,
-                minTrackingConfidence: 0.6
-            });
-
-            this.hands.onResults((results) => {
-                this.landmarks = results.multiHandLandmarks;
-                if (this.onResults) this.onResults(results);
-            });
-
-            this.isLoaded = true;
-            return true;
-        } catch (error) {
-            console.error('Gagal load MediaPipe:', error);
-            this.isLoaded = false;
-            return false;
-        }
+        await new Promise(resolve => setTimeout(resolve, 300));
+        this.isLoaded = true;
+        console.log('✅ Hand detector model loaded (simulasi)');
+        return true;
     }
 
     async detect(imageElement) {
-        // Fungsi ini akan dipanggil oleh loop; kita akan menggunakan MediaPipe langsung
-        // Karena MediaPipe memproses video secara real-time, kita tidak perlu panggil manual.
-        // Kita akan gunakan metode startDetection(videoElement) sebagai gantinya.
-        return null;
+        if (!this.isLoaded) return null;
+        // Simulasi acak 0-4 jari
+        const count = Math.floor(Math.random() * 5);
+        return this.generateFakeLandmarks(count);
     }
 
-    startDetection(videoElement, onResults) {
-        if (!this.isLoaded || !this.hands) return;
-        this.onResults = onResults;
-        this.camera = new Camera(videoElement, {
-            onFrame: async () => {
-                await this.hands.send({ image: videoElement });
-            },
-            width: 640,
-            height: 480
-        });
-        this.camera.start();
-    }
-
-    stopDetection() {
-        if (this.camera) {
-            this.camera.stop();
-            this.camera = null;
+    generateFakeLandmarks(fingerCount) {
+        const landmarks = [];
+        for (let i = 0; i < 21; i++) {
+            let y = 0.3 + Math.random() * 0.4;
+            if ([4, 8, 12, 16, 20].includes(i)) {
+                const fingerIndex = [4, 8, 12, 16, 20].indexOf(i);
+                if (fingerIndex < fingerCount) {
+                    y = 0.1 + Math.random() * 0.2;
+                } else {
+                    y = 0.4 + Math.random() * 0.2;
+                }
+            }
+            landmarks.push({ x: 0.3 + Math.random() * 0.4, y, z: (Math.random() - 0.5) * 0.1 });
         }
+        return { landmarks };
     }
 
     countFingers(landmarks) {
-        if (!landmarks || landmarks.length === 0) return 0;
-        // Ambil tangan pertama
-        const points = landmarks[0];
-        if (!points) return 0;
-
-        // Indeks ujung dan pangkal
-        const tips = [4, 8, 12, 16, 20];
-        const bases = [2, 5, 9, 13, 17];
+        if (!landmarks || !landmarks.landmarks) return 0;
+        const points = landmarks.landmarks;
         let count = 0;
+        const tips = [8, 12, 16, 20];
+        const bases = [5, 9, 13, 17];
         for (let i = 0; i < tips.length; i++) {
-            const tip = points[tips[i]];
-            const base = points[bases[i]];
-            if (tip && base && tip.y < base.y) count++;
+            if (points[tips[i]] && points[bases[i]] && points[tips[i]].y < points[bases[i]].y) {
+                count++;
+            }
         }
         return Math.min(count, 4);
     }
@@ -89,22 +56,37 @@ class HandDetector {
     }
 
     drawLandmarks(ctx, landmarks, width, height) {
-        // Implementasi gambar landmark tetap sama seperti sebelumnya
-        // (gunakan kode yang sudah ada)
-    }
-
-    isLoaded() {
-        return this.isLoaded;
-    }
-
-    dispose() {
-        this.stopDetection();
-        if (this.hands) {
-            this.hands.close();
-            this.hands = null;
+        if (!landmarks || !landmarks.landmarks) return;
+        const points = landmarks.landmarks;
+        const connections = [
+            [0,1],[1,2],[2,3],[3,4],
+            [0,5],[5,6],[6,7],[7,8],
+            [0,9],[9,10],[10,11],[11,12],
+            [0,13],[13,14],[14,15],[15,16],
+            [0,17],[17,18],[18,19],[19,20]
+        ];
+        ctx.strokeStyle = '#6C63FF';
+        ctx.lineWidth = 2;
+        for (const [start, end] of connections) {
+            const p1 = points[start];
+            const p2 = points[end];
+            if (p1 && p2) {
+                ctx.beginPath();
+                ctx.moveTo(p1.x * width, p1.y * height);
+                ctx.lineTo(p2.x * width, p2.y * height);
+                ctx.stroke();
+            }
         }
-        this.isLoaded = false;
+        ctx.fillStyle = '#FF6584';
+        for (const point of points) {
+            ctx.beginPath();
+            ctx.arc(point.x * width, point.y * height, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
+
+    isLoaded() { return this.isLoaded; }
+    dispose() { this.isLoaded = false; }
 }
 
 export default HandDetector;
