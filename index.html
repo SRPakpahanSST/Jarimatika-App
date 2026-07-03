@@ -173,6 +173,54 @@
                 "@mediapipe/camera_utils": "https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.min.js"
             }
         }
+
+    <!-- Section: Perkalian Jarimatika (6-10) -->
+<div class="result-section jarimatika-section">
+    <h3>✖️ Perkalian Jarimatika (6–10)</h3>
+    <div class="jarimatika-input">
+        <div class="input-group">
+            <label>Angka Pertama</label>
+            <select id="num1Select" class="select-styled">
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8" selected>8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Angka Kedua</label>
+            <select id="num2Select" class="select-styled">
+                <option value="6">6</option>
+                <option value="7" selected>7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+            </select>
+        </div>
+        <button id="calcJarimatikaBtn" class="btn-primary">Hitung</button>
+    </div>
+    <div id="jarimatikaResult" class="jarimatika-result">
+        <div class="result-row">
+            <span>Hasil:</span>
+            <span id="resultValue" class="result-number">-</span>
+        </div>
+        <div class="finger-detail">
+            <div class="hand-detail">
+                <span class="hand-label">Tangan Kanan</span>
+                <span id="rightFingerName" class="finger-name">-</span>
+            </div>
+            <div class="hand-detail">
+                <span class="hand-label">Tangan Kiri</span>
+                <span id="leftFingerName" class="finger-name">-</span>
+            </div>
+        </div>
+        <div class="calculation-steps" id="calculationSteps">
+            <!-- akan diisi dengan langkah-langkah -->
+        </div>
+    </div>
+</div>
+
     </script>
     <script type="module" src="js/app.js"></script>
 </body>
