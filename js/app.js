@@ -4,92 +4,57 @@ import JarimatikaCalculator from './calculator.js';
 import JarimatikaChatbot from './chatbot.js';
 
 class JarimatikaApp {
+    // ... kode lain
+
+    // Method untuk perkalian Jarimatika (pindahkan ke dalam class)
     calculateJarimatika() {
-    const num1 = parseInt(document.getElementById('num1Select').value);
-    const num2 = parseInt(document.getElementById('num2Select').value);
+        const num1 = parseInt(document.getElementById('num1Select').value);
+        const num2 = parseInt(document.getElementById('num2Select').value);
 
-    // Validasi: hanya untuk 6-10
-    if (num1 < 6 || num1 > 10 || num2 < 6 || num2 > 10) {
-        document.getElementById('resultValue').textContent = '❌ Gunakan angka 6-10';
-        return;
-    }
-
-    // Indeks jari (0=kelingking, 1=manis, 2=tengah, 3=telunjuk, 4=jempol)
-    const idx1 = num1 - 6; // 0-4
-    const idx2 = num2 - 6;
-
-    // Nama jari
-    const fingerNames = ['Kelingking', 'Manis', 'Tengah', 'Telunjuk', 'Jempol'];
-    const rightFinger = fingerNames[idx1];
-    const leftFinger = fingerNames[idx2];
-
-    // Hitung jari di bawah dan atas
-    const bawahKanan = idx1 + 1;
-    const bawahKiri = idx2 + 1;
-    const atasKanan = 5 - bawahKanan; // 4 - idx1
-    const atasKiri = 5 - bawahKiri;
-
-    const totalBawah = bawahKanan + bawahKiri;
-    const totalAtas = atasKanan * atasKiri;
-    const hasil = totalBawah * 10 + totalAtas;
-
-    // Tampilkan hasil
-    document.getElementById('resultValue').textContent = hasil;
-    document.getElementById('rightFingerName').textContent = `${rightFinger} (${num1})`;
-    document.getElementById('leftFingerName').textContent = `${leftFinger} (${num2})`;
-
-    // Tampilkan langkah perhitungan
-    const steps = document.getElementById('calculationSteps');
-    steps.innerHTML = `
-        <span>📌 ${num1} × ${num2}</span>
-        <span>👉 ${rightFinger} kanan (indeks ${idx1}) + ${leftFinger} kiri (indeks ${idx2})</span>
-        <span>🔽 Jari bawah: ${bawahKanan} + ${bawahKiri} = ${totalBawah} (puluhan)</span>
-        <span>🔼 Jari atas: ${atasKanan} × ${atasKiri} = ${totalAtas} (satuan)</span>
-        <span>✅ Hasil: ${totalBawah}${totalAtas} = ${hasil}</span>
-    `;
-}
-
-    constructor() {
-        this.camera = null;
-        this.detector = null;
-        this.calculator = null;
-        this.chatbot = null;
-        this.isRunning = false;
-        this.isDarkTheme = false;
-        this.init();
-    }
-
-    async init() {
-        try {
-            this.camera = new CameraManager();
-            this.detector = new HandDetector();
-            this.calculator = new JarimatikaCalculator();
-            this.chatbot = new JarimatikaChatbot();
-
-            await this.camera.init();
-            await this.detector.loadModel();
-            this.updateStatus('ready', '✅ Model siap');
-
-            this.setupEvents();
-            this.setupTheme();
-            this.setupInfoModal();
-
-            this.camera.onReady(() => {
-                this.startPredictionLoop();
-            });
-
-            console.log('✅ Jarimatika App initialized');
-        } catch (error) {
-            console.error('❌ Init error:', error);
-            this.updateStatus('error', '❌ Gagal memuat aplikasi');
+        if (num1 < 6 || num1 > 10 || num2 < 6 || num2 > 10) {
+            document.getElementById('resultValue').textContent = '❌ Gunakan angka 6-10';
+            return;
         }
+
+        const idx1 = num1 - 6;
+        const idx2 = num2 - 6;
+        const fingerNames = ['Kelingking', 'Manis', 'Tengah', 'Telunjuk', 'Jempol'];
+        const rightFinger = fingerNames[idx1];
+        const leftFinger = fingerNames[idx2];
+
+        const bawahKanan = idx1 + 1;
+        const bawahKiri = idx2 + 1;
+        const atasKanan = 5 - bawahKanan;
+        const atasKiri = 5 - bawahKiri;
+        const totalBawah = bawahKanan + bawahKiri;
+        const totalAtas = atasKanan * atasKiri;
+        const hasil = totalBawah * 10 + totalAtas;
+
+        document.getElementById('resultValue').textContent = hasil;
+        document.getElementById('rightFingerName').textContent = `${rightFinger} (${num1})`;
+        document.getElementById('leftFingerName').textContent = `${leftFinger} (${num2})`;
+
+        const steps = document.getElementById('calculationSteps');
+        steps.innerHTML = `
+            <span>📌 ${num1} × ${num2}</span>
+            <span>👉 ${rightFinger} kanan + ${leftFinger} kiri</span>
+            <span>🔽 Jari bawah: ${bawahKanan} + ${bawahKiri} = ${totalBawah} (puluhan)</span>
+            <span>🔼 Jari atas: ${atasKanan} × ${atasKiri} = ${totalAtas} (satuan)</span>
+            <span>✅ Hasil: ${totalBawah}${totalAtas} = ${hasil}</span>
+        `;
     }
 
     setupEvents() {
-// Event untuk tombol hitung Jarimatika
-document.getElementById('calcJarimatikaBtn').addEventListener('click', () => {
-    this.calculateJarimatika();
-});
+        // Event untuk tombol hitung Jarimatika
+        document.getElementById('calcJarimatikaBtn').addEventListener('click', () => {
+            this.calculateJarimatika();
+        });
+
+        // ... event lainnya (startCamera, stopCamera, calculator, chatbot)
+    }
+
+    // ... kode lain
+}
         document.getElementById('startCameraBtn').addEventListener('click', () => {
             this.camera.start();
         });
