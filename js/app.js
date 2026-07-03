@@ -4,9 +4,43 @@ import JarimatikaCalculator from './calculator.js';
 import JarimatikaChatbot from './chatbot.js';
 
 class JarimatikaApp {
-    // ... kode lain
+    constructor() {
+        this.camera = null;
+        this.detector = null;
+        this.calculator = null;
+        this.chatbot = null;
+        this.isRunning = false;
+        this.isDarkTheme = false;
+        this.init();
+    }
 
-    // Method untuk perkalian Jarimatika (pindahkan ke dalam class)
+    async init() {
+        try {
+            this.camera = new CameraManager();
+            this.detector = new HandDetector();
+            this.calculator = new JarimatikaCalculator();
+            this.chatbot = new JarimatikaChatbot();
+
+            await this.camera.init();
+            await this.detector.loadModel();
+            this.updateStatus('ready', '✅ Model siap');
+
+            this.setupEvents();
+            this.setupTheme();
+            this.setupInfoModal();
+
+            this.camera.onReady(() => {
+                this.startPredictionLoop();
+            });
+
+            console.log('✅ Jarimatika App initialized');
+        } catch (error) {
+            console.error('❌ Init error:', error);
+            this.updateStatus('error', '❌ Gagal memuat aplikasi');
+        }
+    }
+
+    // ---------- Perkalian Jarimatika (method) ----------
     calculateJarimatika() {
         const num1 = parseInt(document.getElementById('num1Select').value);
         const num2 = parseInt(document.getElementById('num2Select').value);
@@ -44,17 +78,14 @@ class JarimatikaApp {
         `;
     }
 
+    // ---------- Setup Events (semua event di sini) ----------
     setupEvents() {
-        // Event untuk tombol hitung Jarimatika
+        // Tombol hitung Jarimatika
         document.getElementById('calcJarimatikaBtn').addEventListener('click', () => {
             this.calculateJarimatika();
         });
 
-        // ... event lainnya (startCamera, stopCamera, calculator, chatbot)
-    }
-
-    // ... kode lain
-}
+        // Kamera
         document.getElementById('startCameraBtn').addEventListener('click', () => {
             this.camera.start();
         });
@@ -91,6 +122,7 @@ class JarimatikaApp {
         });
     }
 
+    // ---------- Tema ----------
     setupTheme() {
         const toggleBtn = document.getElementById('toggleTheme');
         const savedTheme = localStorage.getItem('jarimatika-theme');
@@ -107,6 +139,7 @@ class JarimatikaApp {
         });
     }
 
+    // ---------- Info Modal ----------
     setupInfoModal() {
         const modal = document.getElementById('infoModal');
         const toggleBtn = document.getElementById('toggleInfo');
@@ -121,6 +154,7 @@ class JarimatikaApp {
         });
     }
 
+    // ---------- UI Updates ----------
     updateStatus(type, message) {
         const badge = document.getElementById('statusBadge');
         badge.className = `status-badge ${type}`;
@@ -141,6 +175,7 @@ class JarimatikaApp {
         });
     }
 
+    // ---------- Chatbot ----------
     async handleChatInput() {
         const input = document.getElementById('chatInput');
         const message = input.value.trim();
@@ -176,6 +211,7 @@ class JarimatikaApp {
         }
     }
 
+    // ---------- Kamera & Deteksi ----------
     async startPredictionLoop() {
         if (this.isRunning) return;
         this.isRunning = true;
@@ -211,6 +247,7 @@ class JarimatikaApp {
     }
 }
 
+// Inisialisasi
 document.addEventListener('DOMContentLoaded', () => {
     const app = new JarimatikaApp();
     window.addEventListener('beforeunload', () => {
