@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jarimatika App - Ubelasy + NKHM</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🖐️</span>
+                    <span class="logo-text">Jarimatika</span>
+                    <span class="logo-badge">+ NKHM</span>
+                </div>
+                <div class="header-actions">
+                    <button id="toggleTheme" class="btn-icon" title="Ganti Tema">🌙</button>
+                    <button id="toggleInfo" class="btn-icon" title="Bantuan">❓</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <div class="app-grid">
+                <!-- Left Panel: Camera & Detection -->
+                <div class="panel panel-camera">
+                    <div class="panel-header">
+                        <h2>📷 Deteksi Jari</h2>
+                        <div class="status-badge" id="statusBadge">⏳ Menunggu</div>
+                    </div>
+                    <div class="camera-wrapper">
+                        <video id="video" autoplay playsinline></video>
+                        <canvas id="canvas"></canvas>
+                        <div class="camera-overlay" id="cameraOverlay">
+                            <button id="startCameraBtn" class="btn-primary btn-large">
+                                🎥 Mulai Kamera
+                            </button>
+                        </div>
+                    </div>
+                    <div class="camera-controls">
+                        <select id="cameraSelect" class="select-styled">
+                            <option value="">Pilih Kamera...</option>
+                        </select>
+                        <select id="fpsSelect" class="select-styled">
+                            <option value="15">15 FPS</option>
+                            <option value="30" selected>30 FPS</option>
+                            <option value="60">60 FPS</option>
+                        </select>
+                        <button id="stopCameraBtn" class="btn-danger">⏹ Stop</button>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Result & Calculator -->
+                <div class="panel panel-result">
+                    <!-- Section: Hand Detection Result -->
+                    <div class="result-section">
+                        <h3>🤚 Hasil Deteksi</h3>
+                        <div class="finger-display">
+                            <div class="finger-box">
+                                <span class="finger-label">Jari Terbuka</span>
+                                <span class="finger-count" id="fingerCount">0</span>
+                            </div>
+                            <div class="finger-box">
+                                <span class="finger-label">Angka</span>
+                                <span class="finger-number" id="fingerNumber">0</span>
+                            </div>
+                        </div>
+                        <div class="finger-visual" id="fingerVisual">
+                            <span class="finger-dot" data-finger="0">👍</span>
+                            <span class="finger-dot" data-finger="1">☝️</span>
+                            <span class="finger-dot" data-finger="2">✌️</span>
+                            <span class="finger-dot" data-finger="3">🤟</span>
+                            <span class="finger-dot" data-finger="4">🖐️</span>
+                        </div>
+                    </div>
+
+                    <!-- Section: Calculator -->
+                    <div class="result-section">
+                        <h3>🧮 Kalkulator Jarimatika</h3>
+                        <div class="calc-display" id="calcDisplay">0</div>
+                        <div class="calc-buttons">
+                            <button class="calc-btn" data-value="7">7</button>
+                            <button class="calc-btn" data-value="8">8</button>
+                            <button class="calc-btn" data-value="9">9</button>
+                            <button class="calc-btn operator" data-value="÷">÷</button>
+                            
+                            <button class="calc-btn" data-value="4">4</button>
+                            <button class="calc-btn" data-value="5">5</button>
+                            <button class="calc-btn" data-value="6">6</button>
+                            <button class="calc-btn operator" data-value="×">×</button>
+                            
+                            <button class="calc-btn" data-value="1">1</button>
+                            <button class="calc-btn" data-value="2">2</button>
+                            <button class="calc-btn" data-value="3">3</button>
+                            <button class="calc-btn operator" data-value="-">−</button>
+                            
+                            <button class="calc-btn" data-value="0">0</button>
+                            <button class="calc-btn" data-value="C">C</button>
+                            <button class="calc-btn" data-value="=">=</button>
+                            <button class="calc-btn operator" data-value="+">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Section: Chatbot -->
+                    <div class="result-section chatbot-section">
+                        <h3>🤖 AI Chatbot</h3>
+                        <div class="chat-container">
+                            <div class="chat-messages" id="chatMessages">
+                                <div class="chat-message bot">
+                                    Halo! Saya asisten Jarimatika. Tanyakan soal matematika atau minta bantuan menghitung!
+                                </div>
+                            </div>
+                            <div class="chat-input-group">
+                                <input type="text" id="chatInput" placeholder="Tanyakan sesuatu..." />
+                                <button id="chatSendBtn" class="btn-primary">Kirim</button>
+                            </div>
+                            <div class="chat-suggestions">
+                                <button class="suggestion-chip" data-query="8+7=">8+7=</button>
+                                <button class="suggestion-chip" data-query="15-6=">15-6=</button>
+                                <button class="suggestion-chip" data-query="3×4=">3×4=</button>
+                                <button class="suggestion-chip" data-query="20÷4=">20÷4=</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 Jarimatika App - Ubelasy + NKHM Nusantara</p>
+            <p class="footer-tech">Powered by TensorFlow.js · MediaPipe · AI</p>
+        </div>
+    </footer>
+
+    <!-- Info Modal -->
+    <div class="modal" id="infoModal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>📖 Panduan Jarimatika</h2>
+            <ul>
+                <li><strong>Tangan Kanan</strong> = Satuan (1-9)</li>
+                <li><strong>Tangan Kiri</strong> = Puluhan (10-90)</li>
+                <li>Untuk angka 1-5: buka jari sesuai angka</li>
+                <li>Untuk angka 6-9: tutup jari sesuai selisih dari 10</li>
+                <li>Contoh: <strong>7</strong> = tutup 3 jari (10-7=3)</li>
+            </ul>
+            <h3>Tips:</h3>
+            <ul>
+                <li>Pastikan tangan terlihat jelas di kamera</li>
+                <li>Gunakan latar belakang terang</li>
+                <li>Jarak tangan 30-50 cm dari kamera</li>
+            </ul>
+            <button class="btn-primary" id="closeInfoBtn">Mengerti!</button>
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "@tensorflow/tfjs": "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js",
+                "@mediapipe/hands": "https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.min.js",
+                "@mediapipe/camera_utils": "https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.min.js"
+            }
+        }
+    </script>
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
