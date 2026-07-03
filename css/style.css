@@ -507,3 +507,69 @@ body {
     .calc-btn { padding: 12px; font-size: 1rem; }
     .header-content { flex-wrap: wrap; gap: 8px; }
 }
+
+/* Jarimatika Section */
+.jarimatika-section {
+    border-top: 2px solid var(--primary-light);
+    padding-top: 20px;
+    margin-top: 20px;
+}
+.jarimatika-input {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+}
+.input-group {
+    flex: 1;
+    min-width: 120px;
+}
+.input-group label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-bottom: 4px;
+}
+.jarimatika-result {
+    background: var(--bg);
+    padding: 16px;
+    border-radius: var(--radius-sm);
+}
+.result-row {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.result-number {
+    color: var(--secondary);
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+.finger-detail {
+    display: flex;
+    gap: 20px;
+    margin: 8px 0;
+}
+.hand-detail {
+    flex: 1;
+}
+.hand-label {
+    font-weight: 600;
+    color: var(--text-light);
+    margin-right: 6px;
+}
+.finger-name {
+    color: var(--primary);
+    font-weight: 600;
+}
+.calculation-steps {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-top: 8px;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+}
+.calculation-steps span {
+    display: block;
+}
