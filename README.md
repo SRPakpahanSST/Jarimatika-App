@@ -1,6 +1,8 @@
 # Jarimatika-App
 Aplikasi Operasi Matematika pakai Jari Tangan
 
+URL Link Aplikasi: https://jarimatika-app.streamlit.app/
+
 # Jarimatika App 🖐️
 
 Aplikasi belajar berhitung dengan jari (Jarimatika) berbasis Computer Vision dan AI.
