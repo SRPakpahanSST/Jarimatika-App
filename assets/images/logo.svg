@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <circle cx="100" cy="100" r="90" fill="#6C63FF" opacity="0.1"/>
+  <circle cx="100" cy="100" r="70" fill="#6C63FF" opacity="0.2"/>
+  <text x="100" y="120" text-anchor="middle" font-size="80" font-family="Arial, sans-serif">🖐️</text>
+  <text x="100" y="160" text-anchor="middle" font-size="14" fill="#6C63FF" font-weight="bold" font-family="Arial, sans-serif">JARIMATIKA</text>
+</svg>
