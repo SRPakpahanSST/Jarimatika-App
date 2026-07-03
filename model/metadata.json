@@ -1,0 +1,13 @@
+{
+  "labels": ["0_jari", "1_jari", "2_jari", "3_jari", "4_jari"],
+  "modelSettings": {
+    "inputShape": [224, 224, 3],
+    "outputClasses": 5,
+    "imageSize": 224,
+    "modelName": "Jarimatika Finger Counter",
+    "version": "1.0.0",
+    "trainingData": "Rock Paper Scissors + custom finger dataset",
+    "accuracy": 0.95,
+    "description": "Model for detecting number of open fingers"
+  }
+}
