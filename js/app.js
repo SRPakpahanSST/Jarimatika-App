@@ -29,9 +29,18 @@ class JarimatikaApp {
             this.setupTheme();
             this.setupInfoModal();
 
+            // Saat kamera siap, mulai loop prediksi
             this.camera.onReady(() => {
                 this.startPredictionLoop();
             });
+
+            // Fallback: jika kamera tidak aktif dalam 5 detik, tetap jalankan simulasi
+            setTimeout(() => {
+                if (!this.camera.isActive()) {
+                    console.warn('Kamera tidak aktif, memulai simulasi otomatis.');
+                    this.startPredictionLoop();
+                }
+            }, 5000);
 
             console.log('✅ Jarimatika App initialized');
         } catch (error) {
@@ -87,9 +96,10 @@ class JarimatikaApp {
 
         // Kamera
         document.getElementById('startCameraBtn').addEventListener('click', () => {
-    alert('Tombol ditekan!'); // Tambahkan ini
-    this.camera.start();
-});
+            // Debug: tampilkan alert untuk memastikan event terpanggil (bisa dihapus nanti)
+            alert('Tombol Mulai Kamera ditekan!');
+            this.camera.start();
+        });
 
         document.getElementById('stopCameraBtn').addEventListener('click', () => {
             this.camera.stop();
@@ -223,10 +233,14 @@ class JarimatikaApp {
         const video = document.getElementById('video');
 
         const detect = async () => {
-            if (!this.isRunning || !this.camera.isActive()) return;
+            if (!this.isRunning) return;
 
             try {
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                // Jika kamera aktif, gambar dari video, jika tidak, tetap lanjutkan simulasi
+                if (this.camera.isActive()) {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                }
+
                 const landmarks = await this.detector.detect(canvas);
                 if (landmarks) {
                     this.detector.drawLandmarks(ctx, landmarks, canvas.width, canvas.height);
