@@ -22,20 +22,43 @@ class JarimatikaApp {
         this.init();
     }
 
-    async init() {
-        try {
-            this.camera = new CameraManager();
-            this.detector = new HandDetector();
-            this.calculator = new JarimatikaCalculator();
-            this.chatbot = new JarimatikaChatbot();
+    // Function untuk load modul dengan error handling
+async function loadModule(path) {
+    try {
+        const module = await import(path);
+        return module;
+    } catch (e) {
+        const div = document.createElement('div');
+        div.style.cssText = 'position:fixed; top:0; left:0; right:0; background:red; color:white; padding:10px; z-index:9999; font-size:16px;';
+        div.innerHTML = `❌ Gagal memuat ${path}: ${e.message}`;
+        document.body.appendChild(div);
+        console.error(`Gagal memuat ${path}:`, e);
+        return null;
+    }
+}
 
-            await this.camera.init();
-            await this.detector.loadModel();
-            this.updateStatus('ready', '✅ Model siap');
+// Ganti import statis dengan dynamic
+// Hapus 4 baris import di atas, lalu di dalam init():
+async init() {
+    try {
+        const CameraManager = (await loadModule('./camera.js')).default;
+        const HandDetector = (await loadModule('./hand-detector.js')).default;
+        const JarimatikaCalculator = (await loadModule('./calculator.js')).default;
+        const JarimatikaChatbot = (await loadModule('./chatbot.js')).default;
 
-            this.setupEvents();
-            this.setupTheme();
-            this.setupInfoModal();
+        if (!CameraManager || !HandDetector || !JarimatikaCalculator || !JarimatikaChatbot) {
+            this.updateStatus('error', '❌ Gagal memuat modul');
+            return;
+        }
+
+        this.camera = new CameraManager();
+        this.detector = new HandDetector();
+        this.calculator = new JarimatikaCalculator();
+        this.chatbot = new JarimatikaChatbot();
+
+        // ... sisanya sama
+    }
+}
 
             // Saat kamera siap, mulai loop prediksi
             this.camera.onReady(() => {
