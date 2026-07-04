@@ -87,8 +87,9 @@ class JarimatikaApp {
 
         // Kamera
         document.getElementById('startCameraBtn').addEventListener('click', () => {
-            this.camera.start();
-        });
+    alert('Tombol ditekan!'); // Tambahkan ini
+    this.camera.start();
+});
 
         document.getElementById('stopCameraBtn').addEventListener('click', () => {
             this.camera.stop();
