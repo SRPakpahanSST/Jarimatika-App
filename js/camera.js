@@ -67,14 +67,12 @@ class CameraManager {
             const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
 
             const constraints = {
-                video: {
-                    deviceId: deviceId ? { exact: deviceId } : undefined,
-                    width: { ideal: isMobile ? 480 : 640 },
-                    height: { ideal: isMobile ? 640 : 480 },
-                    facingMode: isMobile ? 'environment' : 'user',
-                    frameRate: { ideal: this.targetFPS }
-                }
-            };
+    video: {
+        width: { ideal: 640 },
+        height: { ideal: 480 },
+        frameRate: { ideal: this.targetFPS }
+    }
+};
 
             // Clean up previous stream
             if (this.stream) {
