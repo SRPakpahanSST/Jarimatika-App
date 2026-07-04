@@ -20,13 +20,12 @@ class CameraManager {
 
     async loadCameras() {
         try {
-            // Request permission first to get device labels
+            // Minta izin kamera terlebih dahulu agar label perangkat terbaca
             await navigator.mediaDevices.getUserMedia({ video: true });
             
             const devices = await navigator.mediaDevices.enumerateDevices();
             this.devices = devices.filter(device => device.kind === 'videoinput');
 
-            // Populate select
             this.cameraSelect.innerHTML = '';
             this.devices.forEach((device, index) => {
                 const option = document.createElement('option');
@@ -40,7 +39,7 @@ class CameraManager {
                 this.startBtn.disabled = true;
             }
         } catch (error) {
-            console.error('Failed to load cameras:', error);
+            console.error('Gagal memuat kamera:', error);
             this.cameraSelect.innerHTML = '<option value="">Akses kamera ditolak</option>';
             this.startBtn.disabled = true;
         }
@@ -55,26 +54,28 @@ class CameraManager {
     }
 
     async start() {
-    this.startBtn.textContent = '⏳ Mengakses...';
-    // ... kode lainnya
         if (this.isActive) return;
+
+        // Cek apakah browser mendukung getUserMedia
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('Browser Anda tidak mendukung akses kamera.');
+            return;
+        }
 
         try {
             this.startBtn.disabled = true;
             this.startBtn.textContent = '⏳ Memulai...';
 
-            const deviceId = this.cameraSelect.value;
-            const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-
+            // Constraints sederhana (kompatibel dengan sebagian besar perangkat)
             const constraints = {
-    video: {
-        width: { ideal: 640 },
-        height: { ideal: 480 },
-        frameRate: { ideal: this.targetFPS }
-    }
-};
+                video: {
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    frameRate: { ideal: this.targetFPS }
+                }
+            };
 
-            // Clean up previous stream
+            // Hentikan stream sebelumnya jika ada
             if (this.stream) {
                 this.stream.getTracks().forEach(track => track.stop());
             }
@@ -88,18 +89,25 @@ class CameraManager {
             this.startBtn.textContent = '✅ Aktif';
             this.startBtn.disabled = false;
 
-            // Trigger ready callback
+            // Panggil callback jika ada
             if (this.onReadyCallback) {
                 this.onReadyCallback();
             }
 
         } catch (error) {
-            console.error('Failed to start camera:', error);
+            console.error('Gagal memulai kamera:', error);
             this.startBtn.textContent = '❌ Gagal';
             this.startBtn.disabled = false;
-            alert(error.name === 'NotAllowedError' 
-                ? 'Akses kamera ditolak. Silakan izinkan akses kamera.'
-                : 'Gagal memulai kamera.');
+
+            let pesan = 'Gagal memulai kamera.';
+            if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                pesan = 'Akses kamera ditolak. Izinkan akses kamera di pengaturan browser.';
+            } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+                pesan = 'Tidak ada kamera yang terdeteksi.';
+            } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+                pesan = 'Kamera sedang digunakan oleh aplikasi lain.';
+            }
+            alert(pesan);
         }
     }
 
