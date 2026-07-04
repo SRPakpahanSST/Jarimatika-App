@@ -55,6 +55,8 @@ class CameraManager {
     }
 
     async start() {
+    this.startBtn.textContent = '⏳ Mengakses...';
+    // ... kode lainnya
         if (this.isActive) return;
 
         try {
