@@ -171,3 +171,101 @@ class JarimatikaApp {
         const badge = document.getElementById('statusBadge');
         badge.className = `status-badge ${type}`;
         badge.textContent = message;
+    }
+
+    updateCalculatorDisplay() {
+        document.getElementById('calcDisplay').textContent = this.calculator.getDisplay();
+    }
+
+    updateFingerDisplay(fingerCount, number) {
+        document.getElementById('fingerCount').textContent = fingerCount;
+        document.getElementById('fingerNumber').textContent = number;
+        const dots = document.querySelectorAll('.finger-dot');
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('active', index < fingerCount);
+        });
+    }
+
+    // ---------- Chatbot ----------
+    async handleChatInput() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        if (!message) return;
+        this.addChatMessage('user', message);
+        input.value = '';
+        const response = this.chatbot.getResponse(message);
+        this.addChatMessage('bot', response);
+    }
+
+    addChatMessage(type, text) {
+        const container = document.getElementById('chatMessages');
+        const div = document.createElement('div');
+        div.className = `chat-message ${type}`;
+        if (type === 'bot') {
+            div.textContent = '⏳';
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+            let index = 0;
+            const interval = setInterval(() => {
+                if (index <= text.length) {
+                    div.textContent = text.slice(0, index);
+                    container.scrollTop = container.scrollHeight;
+                    index++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 15);
+        } else {
+            div.textContent = text;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+    }
+
+    // ---------- Kamera & Deteksi ----------
+    async startPredictionLoop() {
+        if (this.isRunning) return;
+        this.isRunning = true;
+        document.getElementById('cameraOverlay').classList.add('hidden');
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const video = document.getElementById('video');
+
+        const detect = async () => {
+            if (!this.isRunning) return;
+
+            try {
+                if (this.camera.isActive()) {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                }
+
+                const landmarks = await this.detector.detect(canvas);
+                if (landmarks) {
+                    this.detector.drawLandmarks(ctx, landmarks, canvas.width, canvas.height);
+                    const fingerCount = this.detector.countFingers(landmarks);
+                    const number = this.detector.getNumberFromFingers(fingerCount);
+                    this.updateFingerDisplay(fingerCount, number);
+                    this.calculator.setDetectedNumber(number);
+                    this.updateCalculatorDisplay();
+                }
+            } catch (error) {
+                console.error('Prediction error:', error);
+            }
+            requestAnimationFrame(detect);
+        };
+
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        detect();
+    }
+}
+
+// Inisialisasi
+document.addEventListener('DOMContentLoaded', () => {
+    const app = new JarimatikaApp();
+    window.addEventListener('beforeunload', () => {
+        if (app.camera) app.camera.destroy();
+        if (app.detector) app.detector.dispose();
+    });
+});
