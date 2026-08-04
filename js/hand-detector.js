@@ -1,92 +1,104 @@
-import { Hands } from '@mediapipe/hands';
-import { Camera } from '@mediapipe/camera_utils';
+// hand-detector.js
+export class HandDetector {
+  constructor() {
+    this.hands = null;
+    this.camera = null;
+    this.landmarks = null;
+    this.handedness = null;
+    this.isRunning = false;
+    this.onResults = null;
 
-class HandDetector {
-    constructor() {
-        this.isLoaded = false;
-    }
+    // Inisialisasi MediaPipe Hands
+    this.hands = new Hands({
+      locateFile: (file) =>
+        `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
 
-    async loadModel() {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        this.isLoaded = true;
-        console.log('✅ Hand detector model loaded (simulasi)');
-        return true;
-    }
+    this.hands.setOptions({
+      maxNumHands: 2,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.6
+    });
 
-    async detect(imageElement) {
-        if (!this.isLoaded) return null;
-        // Simulasi acak 0-4 jari
-        const count = Math.floor(Math.random() * 5);
-        return this.generateFakeLandmarks(count);
-    }
+    this.hands.onResults((results) => {
+      this.landmarks = results.multiHandLandmarks;
+      this.handedness = results.multiHandedness;
+      if (this.onResults) this.onResults(results);
+    });
+  }
 
-    generateFakeLandmarks(fingerCount) {
-        const landmarks = [];
-        for (let i = 0; i < 21; i++) {
-            let y = 0.3 + Math.random() * 0.4;
-            if ([4, 8, 12, 16, 20].includes(i)) {
-                const fingerIndex = [4, 8, 12, 16, 20].indexOf(i);
-                if (fingerIndex < fingerCount) {
-                    y = 0.1 + Math.random() * 0.2;
-                } else {
-                    y = 0.4 + Math.random() * 0.2;
-                }
-            }
-            landmarks.push({ x: 0.3 + Math.random() * 0.4, y, z: (Math.random() - 0.5) * 0.1 });
+  // Mulai kamera
+  async startCamera(videoElement, fps = 30) {
+    if (this.camera) return;
+    this.camera = new Camera(videoElement, {
+      onFrame: async () => {
+        if (this.hands) {
+          await this.hands.send({ image: videoElement });
         }
-        return { landmarks };
+      },
+      width: 640,
+      height: 480,
+      fps: fps
+    });
+    await this.camera.start();
+    this.isRunning = true;
+  }
+
+  // Hentikan kamera
+  stopCamera() {
+    if (this.camera) {
+      this.camera.stop();
+      this.camera = null;
+    }
+    this.isRunning = false;
+  }
+
+  // Mendapatkan status (terbuka/tutup) kelima jari dari satu tangan
+  // landmarks: array 21 landmark MediaPipe
+  // return: [jempol, telunjuk, tengah, manis, kelingking] -> boolean (true=terbuka)
+  getFingerStatus(landmarks) {
+    if (!landmarks || landmarks.length < 21) return null;
+
+    // Indeks landmark: 4=ujung jempol, 8=ujung telunjuk, 12=ujung tengah,
+    // 16=ujung manis, 20=ujung kelingking
+    const tipIds = [4, 8, 12, 16, 20];
+    // Ruas kedua (PIP) untuk perbandingan: 2,6,10,14,18
+    const pipIds = [2, 6, 10, 14, 18];
+
+    const fingers = [];
+
+    // Jempol: terbuka jika jarak horizontal antara tip dan MCP (indeks 2) cukup besar
+    const thumbTip = landmarks[4];
+    const thumbMcp = landmarks[2];
+    const thumbOpen = Math.abs(thumbTip.x - thumbMcp.x) > 0.06;
+    fingers.push(thumbOpen);
+
+    // Jari lainnya: terbuka jika ujung jari (tip.y) lebih tinggi dari pip.y
+    for (let i = 1; i < 5; i++) {
+      const tip = landmarks[tipIds[i]];
+      const pip = landmarks[pipIds[i]];
+      const open = tip.y < pip.y - 0.02;
+      fingers.push(open);
     }
 
-    countFingers(landmarks) {
-        if (!landmarks || !landmarks.landmarks) return 0;
-        const points = landmarks.landmarks;
-        let count = 0;
-        const tips = [8, 12, 16, 20];
-        const bases = [5, 9, 13, 17];
-        for (let i = 0; i < tips.length; i++) {
-            if (points[tips[i]] && points[bases[i]] && points[tips[i]].y < points[bases[i]].y) {
-                count++;
-            }
-        }
-        return Math.min(count, 4);
-    }
+    // Susunan: [jempol, telunjuk, tengah, manis, kelingking]
+    return fingers;
+  }
 
-    getNumberFromFingers(fingerCount) {
-        return fingerCount;
-    }
+  // Mendapatkan status jari untuk kedua tangan
+  // return: { left: [status], right: [status] } atau null
+  getAllFingerStatus() {
+    if (!this.landmarks || this.landmarks.length === 0) return null;
 
-    drawLandmarks(ctx, landmarks, width, height) {
-        if (!landmarks || !landmarks.landmarks) return;
-        const points = landmarks.landmarks;
-        const connections = [
-            [0,1],[1,2],[2,3],[3,4],
-            [0,5],[5,6],[6,7],[7,8],
-            [0,9],[9,10],[10,11],[11,12],
-            [0,13],[13,14],[14,15],[15,16],
-            [0,17],[17,18],[18,19],[19,20]
-        ];
-        ctx.strokeStyle = '#6C63FF';
-        ctx.lineWidth = 2;
-        for (const [start, end] of connections) {
-            const p1 = points[start];
-            const p2 = points[end];
-            if (p1 && p2) {
-                ctx.beginPath();
-                ctx.moveTo(p1.x * width, p1.y * height);
-                ctx.lineTo(p2.x * width, p2.y * height);
-                ctx.stroke();
-            }
-        }
-        ctx.fillStyle = '#FF6584';
-        for (const point of points) {
-            ctx.beginPath();
-            ctx.arc(point.x * width, point.y * height, 4, 0, Math.PI * 2);
-            ctx.fill();
-        }
+    const result = { left: null, right: null };
+    for (let i = 0; i < this.landmarks.length; i++) {
+      const hand = this.landmarks[i];
+      const handedness = this.handedness[i]?.label || 'Unknown';
+      const status = this.getFingerStatus(hand);
+      if (handedness === 'Left') result.left = status;
+      else if (handedness === 'Right') result.right = status;
     }
-
-    isLoaded() { return this.isLoaded; }
-    dispose() { this.isLoaded = false; }
+    return result;
+  }
 }
-
-export default HandDetector;
