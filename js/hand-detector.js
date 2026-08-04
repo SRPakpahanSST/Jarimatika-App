@@ -1,104 +1,63 @@
-// hand-detector.js
-export class HandDetector {
-  constructor() {
-    this.hands = null;
-    this.camera = null;
-    this.landmarks = null;
-    this.handedness = null;
-    this.isRunning = false;
-    this.onResults = null;
+// calculator.js
 
-    // Inisialisasi MediaPipe Hands
-    this.hands = new Hands({
-      locateFile: (file) =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
-    });
-
-    this.hands.setOptions({
-      maxNumHands: 2,
-      modelComplexity: 1,
-      minDetectionConfidence: 0.7,
-      minTrackingConfidence: 0.6
-    });
-
-    this.hands.onResults((results) => {
-      this.landmarks = results.multiHandLandmarks;
-      this.handedness = results.multiHandedness;
-      if (this.onResults) this.onResults(results);
-    });
+/**
+ * Menghitung hasil perkalian dua angka (6-10) menggunakan metode PMD dasar.
+ * @param {number} leftIndex - Indeks jari yang ditekuk di tangan kiri (0-4)
+ * @param {number} rightIndex - Indeks jari yang ditekuk di tangan kanan (0-4)
+ * @returns {Object} { result, detail }
+ */
+export function calculatePMD(leftIndex, rightIndex) {
+  if (leftIndex < 0 || leftIndex > 4 || rightIndex < 0 || rightIndex > 4) {
+    return { result: null, error: 'Indeks jari tidak valid' };
   }
 
-  // Mulai kamera
-  async startCamera(videoElement, fps = 30) {
-    if (this.camera) return;
-    this.camera = new Camera(videoElement, {
-      onFrame: async () => {
-        if (this.hands) {
-          await this.hands.send({ image: videoElement });
-        }
-      },
-      width: 640,
-      height: 480,
-      fps: fps
-    });
-    await this.camera.start();
-    this.isRunning = true;
-  }
+  const num1 = leftIndex + 6;
+  const num2 = rightIndex + 6;
 
-  // Hentikan kamera
-  stopCamera() {
-    if (this.camera) {
-      this.camera.stop();
-      this.camera = null;
+  const bawahKiri = leftIndex + 1;
+  const bawahKanan = rightIndex + 1;
+  const atasKiri = 5 - bawahKiri;
+  const atasKanan = 5 - bawahKanan;
+
+  const totalBawah = bawahKiri + bawahKanan;
+  const totalAtas = atasKiri * atasKanan;
+
+  const result = totalBawah * 10 + totalAtas;
+
+  return {
+    result,
+    detail: {
+      num1,
+      num2,
+      bawahKiri,
+      bawahKanan,
+      atasKiri,
+      atasKanan,
+      totalBawah,
+      totalAtas
     }
-    this.isRunning = false;
+  };
+}
+
+/**
+ * Mencari indeks jari yang tertutup (false) dari array status.
+ * Mengembalikan indeks (0-4) jika tepat satu jari tertutup, selain itu null.
+ */
+export function findClosedFinger(statusArray) {
+  if (!statusArray || statusArray.length !== 5) return null;
+  const closedIndices = statusArray
+    .map((open, idx) => (open === false ? idx : -1))
+    .filter(idx => idx !== -1);
+  if (closedIndices.length === 1) {
+    return closedIndices[0];
   }
+  return null;
+}
 
-  // Mendapatkan status (terbuka/tutup) kelima jari dari satu tangan
-  // landmarks: array 21 landmark MediaPipe
-  // return: [jempol, telunjuk, tengah, manis, kelingking] -> boolean (true=terbuka)
-  getFingerStatus(landmarks) {
-    if (!landmarks || landmarks.length < 21) return null;
-
-    // Indeks landmark: 4=ujung jempol, 8=ujung telunjuk, 12=ujung tengah,
-    // 16=ujung manis, 20=ujung kelingking
-    const tipIds = [4, 8, 12, 16, 20];
-    // Ruas kedua (PIP) untuk perbandingan: 2,6,10,14,18
-    const pipIds = [2, 6, 10, 14, 18];
-
-    const fingers = [];
-
-    // Jempol: terbuka jika jarak horizontal antara tip dan MCP (indeks 2) cukup besar
-    const thumbTip = landmarks[4];
-    const thumbMcp = landmarks[2];
-    const thumbOpen = Math.abs(thumbTip.x - thumbMcp.x) > 0.06;
-    fingers.push(thumbOpen);
-
-    // Jari lainnya: terbuka jika ujung jari (tip.y) lebih tinggi dari pip.y
-    for (let i = 1; i < 5; i++) {
-      const tip = landmarks[tipIds[i]];
-      const pip = landmarks[pipIds[i]];
-      const open = tip.y < pip.y - 0.02;
-      fingers.push(open);
-    }
-
-    // Susunan: [jempol, telunjuk, tengah, manis, kelingking]
-    return fingers;
-  }
-
-  // Mendapatkan status jari untuk kedua tangan
-  // return: { left: [status], right: [status] } atau null
-  getAllFingerStatus() {
-    if (!this.landmarks || this.landmarks.length === 0) return null;
-
-    const result = { left: null, right: null };
-    for (let i = 0; i < this.landmarks.length; i++) {
-      const hand = this.landmarks[i];
-      const handedness = this.handedness[i]?.label || 'Unknown';
-      const status = this.getFingerStatus(hand);
-      if (handedness === 'Left') result.left = status;
-      else if (handedness === 'Right') result.right = status;
-    }
-    return result;
-  }
+/**
+ * Mendapatkan nama jari dari indeks (0-4)
+ */
+export function getFingerName(index) {
+  const names = ['Kelingking', 'Manis', 'Tengah', 'Telunjuk', 'Jempol'];
+  return names[index] || '-';
 }
